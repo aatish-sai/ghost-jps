@@ -9,8 +9,11 @@ homepage: https://ghost.org/
 categories: 
 - apps/content-management
 baseUrl: https://github.com/aatish-sai/ghost-jps/blob/master
+
 appVersion: latest
 id: ghost
+
+skipNodeEmails: true
 
 mixins:
   - configs/vers.yaml
@@ -18,7 +21,8 @@ mixins:
 settings:
   fields:
     - type: string
-      caption: Site URL
+      caption: 'Site URL'
+      name: url
       vtype: url
 
 success: /texts/success.md
@@ -29,6 +33,8 @@ nodes:
   env:
     NODE_ENV: production
     PACKAGE_MANAGER: yarn
+    JELASTIC_PORTS: 8080
+    PROCESS_MANAGER_FILE: 
 - cloudlets: 4
   nodeType: mysql
 
@@ -39,8 +45,8 @@ onInstall:
 actions:
   ghostInstall:
     cmd[cp]:
-      npm install ghost-cli@latest -g 
-      ghost install ${globals.version_ghost} --no-prompt --no-mem-check --no-setup-nginx --no-setup-ssl --no-setup-systemd --no-setup-linux-user --no-start --no-enable --port 8080 --url ulr_here --db mysql --dbhost ${nodes.sqldb.master.intIP} --dbuser roor --dbpassword ${nodes.mysql.password}
+      yarn install ghost-cli@latest -g 
+      ghost install ${globals.version_ghost} --no-prompt --no-mem-check --no-setup-nginx --no-setup-ssl --no-setup-systemd --no-setup-linux-user --no-start --no-enable --port 8080 --url ${settings.url} --db mysql --dbhost ${nodes.sqldb.master.intIP} --dbuser roor --dbpassword ${nodes.mysql.password}
 
   createDb:
        cmd[sqldb]:
