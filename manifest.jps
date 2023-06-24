@@ -1,73 +1,50 @@
-version: '1.5'
-appVersion: latest
 type: install
-id: ghost
-name: Ghost
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/ghost/master
+version: '1.0'
+name: 'Ghost 5.0'
 logo: /images/ghost-white.png
+description: 
+  text: /texts/description.md
+  short: The professional publishing platform
 homepage: https://ghost.org/
+categories: 
+- apps/content-management
+baseUrl: https://github.com/aatish-sai/ghost-jps/blob/master
+appVersion: latest
+id: ghost
 
 mixins:
   - configs/vers.yaml
 
-categories: 
-- apps/content-management
-
-description: 
-  text: /texts/description.md
-  short: The professional publishing platform
+settings:
+  fields:
+    - type: string
+      caption: Site URL
+      vtype: url
 
 success: /texts/success.md
   
-globals:
-  configPath: /home/jelastic/ROOT/core/shared/config
-  defaultConfig: ${globals.configPath}/defaults.json
-  configDevelopment: ${globals.configPath}/env/config.development.json
-  configProduction: ${globals.configPath}/env/config.production.json
-
 nodes:
-- cloudlets: 18
-  nodeType: nodejs14-forever
+- cloudlets: 4
+  nodeType: nodejs16-forever
   env:
     NODE_ENV: production
     PACKAGE_MANAGER: yarn
-- cloudlets: 8
+- cloudlets: 4
   nodeType: mysql
 
 onInstall:
-- deployArchive
 - createDb
-- deployHomeDir
+- ghostInstall
 - restartNodes:
     nodeGroup: [cp]
-- migration_lock_remove
-- restartNodes:
-    nodeGroup: [cp]
-
 
 actions:
-  deployArchive:
-    deploy:
-      name: Ghost-latest
-      context: ROOT
-      archive: https://github.com/TryGhost/Ghost/releases/download/v${globals.version_ghost}/Ghost-${globals.version_ghost}.zip
-
-  deployHomeDir:
+  ghostInstall:
     cmd[cp]:
-      sed -i 's|"url":\ "http:\/\/localhost:2368",|"url":"http:\/\/${env.domain}",|g' ${globals.defaultConfig};
-      sed -i 's|"host":\ "127.0.0.1",|"host":"${nodes.cp.master.intIP}",|g' ${globals.defaultConfig};
-      sed -i 's|2368|8080|g' ${globals.defaultConfig};
-      sed -i 's|"url":\ "http:\/\/localhost:2368",|"url":\ "http:\/\/${env.domain}",|g' ${globals.configDevelopment};
-      sed -i 's|"client":\ "sqlite3",|"client":\ "mysql",|g' ${globals.configDevelopment};
-      sed -i 's|"filename":\ "content\/data\/ghost-dev.db"|"host":\ "${nodes.sqldb.master.intIP}",\n"user":\ "root",\n"password":\ "${nodes.mysql.password}",\n"database":\ "ghost"|g' ${globals.configDevelopment};
-      sed -i 's|127.0.0.1|${nodes.sqldb.master.intIP}|g' ${globals.configProduction};
-      sed -i 's|"password"\ :\ ""|"password"\ :\ "${nodes.mysql.password}"|g' ${globals.configProduction};
-      cd $HOME/ROOT;
+      npm install ghost-cli@latest -g 
+      ghost install ${globals.version_ghost} --no-prompt --no-setup-nginx --no-setup-ssl --no-setup-systemd --no-setup-linux-user --no-start --no-enable --port 8080 --url ulr_here --db mysql --dbhost ${nodes.sqldb.master.intIP} --dbuser roor ---dbpassword ${nodes.mysql.password}
 
   createDb:
        cmd[sqldb]:
          mysql -uroot -p${nodes.mysql.password} -e "create database ghost" 2>&1 1>/dev/null
-  
-  migration_lock_remove:
-       cmd[sqldb]:
-         mysql -uroot -p${nodes.mysql.password} -e "use ghost;UPDATE migrations_lock set locked=0 where lock_key='km01';"
+
