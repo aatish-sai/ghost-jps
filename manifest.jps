@@ -42,7 +42,7 @@ actions:
   ghostInstall:
     cmd[cp]:
       npm install ghost-cli@latest -g 
-      ghost install ${globals.version_ghost} --no-prompt --no-setup-nginx --no-setup-ssl --no-setup-systemd --no-setup-linux-user --no-start --no-enable --port 8080 --url ulr_here --db mysql --dbhost ${nodes.sqldb.master.intIP} --dbuser roor ---dbpassword ${nodes.mysql.password}
+      ghost install ${globals.version_ghost} --no-prompt --no-mem-check --no-setup-nginx --no-setup-ssl --no-setup-systemd --no-setup-linux-user --no-start --no-enable --port 8080 --url ulr_here --db mysql --dbhost ${nodes.sqldb.master.intIP} --dbuser roor --dbpassword ${nodes.mysql.password}
 
   createDb:
        cmd[sqldb]:
