@@ -35,8 +35,6 @@ nodes:
 onInstall:
 - createDb
 - ghostInstall
-- restartNodes:
-    nodeGroup: [cp]
 
 actions:
   ghostInstall:
